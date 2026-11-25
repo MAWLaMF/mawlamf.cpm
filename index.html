@@ -99,12 +99,16 @@
           <input id="playerName" name="playerName" type="text" maxlength="40" autocomplete="nickname" required placeholder="Ej. tu usuario de Car Parking">
         </div>
         <div class="field">
-          <label for="tiktokName">Tu usuario de TikTok (opcional)</label>
-          <input id="tiktokName" name="tiktokName" type="text" maxlength="40" autocomplete="off" placeholder="@tuusuario">
+          <label for="tiktokName">Tu usuario de TikTok</label>
+          <input id="tiktokName" name="tiktokName" type="text" maxlength="40" autocomplete="off" required placeholder="@tuusuario">
         </div>
-        <div class="field">
-          <label class="check-row"><input type="checkbox" id="followsTikTok"> <span>¿Ya me sigues en TikTok? Sí, ya te sigo</span></label>
-        </div>
+        <fieldset class="field" style="border:0;padding:0">
+          <legend class="field-label">¿Ya me sigues en TikTok?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="followsTikTok" value="Sí" required> Sí</label>
+            <label class="choice"><input type="radio" name="followsTikTok" value="No" required> No</label>
+          </div>
+        </fieldset>
         <fieldset class="field" style="border:0;padding:0">
           <legend class="field-label">¿Por qué quieres comunicarte?</legend>
           <div class="choices">
@@ -117,6 +121,15 @@
         <div class="field">
           <label class="check-row"><input type="checkbox" id="ggWork"> <span>Mi consulta es sobre cambiar o trabajar con GG</span></label>
         </div>
+        <fieldset class="field gift-box" id="ggOptions" style="border:0;padding:0">
+          <legend class="field-label">¿En qué tipo de trabajo estás interesado?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="ggType" value="Economía 💸"> 1. Economía 💸</label>
+            <label class="choice"><input type="radio" name="ggType" value="Cromos 🎨"> 2. Cromos 🎨</label>
+            <label class="choice"><input type="radio" name="ggType" value="Carros 🛻"> 3. Carros 🛻</label>
+            <label class="choice"><input type="radio" name="ggType" value="2300 HP 💨"> 4. 2300 HP 💨</label>
+          </div>
+        </fieldset>
         <div class="field gift-box" id="giftBox">
           <label for="giftDetails">Cuéntame brevemente qué necesitas</label>
           <textarea id="giftDetails" maxlength="300" placeholder="No compartas contraseñas ni datos personales"></textarea>
@@ -135,6 +148,8 @@
       const dialog = document.getElementById('contactDialog');
       const form = document.getElementById('contactForm');
       const giftBox = document.getElementById('giftBox');
+      const ggOptions = document.getElementById('ggOptions');
+      const ggWork = document.getElementById('ggWork');
       const giftTimer = document.getElementById('giftTimer');
       const status = document.getElementById('formStatus');
       const sendButton = document.getElementById('sendMessage');
@@ -205,6 +220,11 @@
       dialog.addEventListener('click', e => { if (e.target === dialog) dialog.classList.remove('open'); });
       document.addEventListener('keydown', e => { if (e.key === 'Escape') dialog.classList.remove('open'); });
       form.querySelectorAll('input[name="reason"]').forEach(el => el.addEventListener('change', updateReason));
+      ggWork.addEventListener('change', () => {
+        ggOptions.classList.toggle('show', ggWork.checked);
+        ggOptions.querySelectorAll('input[name="ggType"]').forEach(el => { el.required = ggWork.checked; });
+        if (!ggWork.checked) ggOptions.querySelectorAll('input[name="ggType"]').forEach(el => { el.checked = false; });
+      });
 
       form.addEventListener('submit', e => {
         e.preventDefault();
@@ -222,16 +242,18 @@
         }
         const name = document.getElementById('playerName').value.trim();
         const tiktok = document.getElementById('tiktokName').value.trim();
-        const follows = document.getElementById('followsTikTok').checked ? 'Sí' : 'No';
-        const gg = document.getElementById('ggWork').checked ? 'Sí' : 'No';
+        const follows = form.querySelector('input[name="followsTikTok"]:checked')?.value || '';
+        const gg = ggWork.checked ? 'Sí' : 'No';
+        const ggType = ggWork.checked ? (form.querySelector('input[name="ggType"]:checked')?.value || '') : '';
         const detail = reason === 'Regalo o similar' ? giftDetails.value.trim() : '';
         const message = [
           'Hola, te contacto desde mawlamf.cpm.',
           'Usuario/nombre: ' + name,
-          'Usuario de TikTok: ' + (tiktok || 'No indicado'),
+          'Usuario de TikTok: ' + tiktok,
           '¿Ya sigue en TikTok?: ' + follows,
           'Motivo: ' + reason,
           '¿Consulta sobre cambiar o trabajar con GG?: ' + gg,
+          ggType ? 'Tipo de trabajo: ' + ggType : '',
           detail ? 'Detalle: ' + detail : ''
         ].filter(Boolean).join('\n');
         saveAttempt();
